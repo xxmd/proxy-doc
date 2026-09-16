@@ -1,0 +1,50 @@
+# ============================================================
+#  节点质量对比测试配置
+#  把「自建香港节点」和「机场香港节点」放进同一个 mihomo 实例，
+#  便于逐个切换做同条件对比测量。
+#
+#  端口与 Clash Verge 隔离：mixed 7899 / API 9099
+#  用法：D:\ClashVerge\verge-mihomo.exe -d <workdir> -f compare-config.yaml
+# ============================================================
+mixed-port: 7899
+allow-lan: false
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: false          # 关掉，看未修饰的原始延迟
+external-controller: 127.0.0.1:9099
+secret: ''
+dns:
+  enable: false
+
+proxies:
+  # ---------- 自建：阿里云香港 REALITY ----------
+  - name: 'HK-Self'
+    type: vless
+    server: 47.76.25.174
+    port: 443
+    uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.hkex.com.hk
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: pkRXGVRAllSNLATNBPMP7KuDe0ej5BsbsKrUEfXAM2k
+      short-id: 95d78701bfdcb44b
+
+  # ---------- 机场：SSRDOG 香港 01-05（AnyTLS）----------
+  - { name: 'SSRDOG-HK-01', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 601, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'SSRDOG-HK-02', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 602, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'SSRDOG-HK-03', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 603, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'SSRDOG-HK-04', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 604, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'SSRDOG-HK-05', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 605, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+
+proxy-groups:
+  - name: 'CMP'
+    type: select
+    proxies: ['HK-Self', 'SSRDOG-HK-01', 'SSRDOG-HK-02', 'SSRDOG-HK-03', 'SSRDOG-HK-04', 'SSRDOG-HK-05']
+
+rules:
+  - 'MATCH,CMP'
