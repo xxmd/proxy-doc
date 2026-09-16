@@ -1,0 +1,112 @@
+# server/ —— 服务端脚本
+
+在 VPS（Ubuntu 24.04）上运行。
+
+---
+
+## xray-config.example.json
+
+服务端配置模板，含完整的 VLESS + XTLS-Vision + REALITY 配置，以及：
+
+- **禁回国流量**：`geosite:cn` / `geoip:cn` → `block`（用代理访问境内网站会被标记为代理 IP）
+- **屏蔽 BT**：`bittorrent` → `block`
+- **policy 去默认值**：`handshake: 3` / `connIdle: 180`（默认的 60/300 是明显指纹）
+- **只监听 IPv4**：`domainStrategy: UseIPv4`（v4-only 机器避免 IPv6 绕路）
+
+### 需要替换的占位符
+
+| 占位符 | 怎么生成 |
+|---|---|
+| `<REALITY_PRIVATE_KEY>` | `xray x25519` 输出的 `PrivateKey` |
+| `<SHORT_ID>` | `openssl rand -hex 8` |
+| `<TARGET_DOMAIN>` | 先跑 `test-reality-targets.sh` 选一个能用的 |
+| `<UUID>` | `xray uuid` |
+
+> ⚠️ **客户端的 `public-key` = `xray x25519 -i "<私钥>"` 输出的 `Password (PublicKey)`。**
+> Xray 新版把客户端这个字段从 `publicKey` 改名成了 `password`。
+
+---
+
+## xray-setup.sh
+
+一键部署。做五件事：
+
+1. 安装配置到 `/usr/local/etc/xray/config.json` 并做语法检查
+2. 给 systemd 加 `XRAY_LOCATION_ASSET=/usr/local/share/xray`（否则 `geoip:cn` 这类规则找不到数据文件）
+3. 修正 `/var/log/xray` 权限（服务以 `nobody` 运行）
+4. 开启 **BBR + fq** 及 TCP 缓冲区调优
+5. 重启服务并做一次本机伪装自测
+
+```bash
+scp ../secrets/xray-config.json xray-setup.sh root@<SERVER_IP>:/tmp/
+ssh root@<SERVER_IP> "bash /tmp/xray-setup.sh /tmp/xray-config.json"
+```
+
+---
+
+## xray-verify.sh
+
+**全链路自检**，自动从已部署的配置里读取 UUID / 私钥 / shortId / target，无需手填。验证四项：
+
+1. 配置语法
+2. 服务状态 + 443 监听
+3. **伪装效果**：未认证流量是否被原样转发到真实网站（应返回真站的 HTTP 状态码 + 证书校验通过）
+4. **代理链路**：本机起一个 Xray 客户端实例走完整协议栈，测试 google / youtube / baidu（baidu 应失败，验证禁回国规则）
+
+```bash
+ssh root@<SERVER_IP> "bash /tmp/xray-verify.sh"
+```
+
+预期输出：
+
+```
+google  : 200  0.15s
+youtube : 200  0.26s
+baidu   : 000  0.04s  <- expect fail (CN blocked)
+exit IP : {"country":"Hong Kong", ...}
+```
+
+---
+
+## test-reality-targets.sh
+
+批量测试候选域名能否作为 REALITY 的 `target`。**这一步不能省** —— 实测 `www.microsoft.com` 在 Xray 26.x 上会导致所有客户端握手失败。
+
+脚本会：
+1. 用 `xray tls ping` 检查每个候选站的 TLS 版本与后量子密钥交换支持
+2. 对支持 TLS 1.3 的站，逐个改配置、重启服务、起客户端实测
+
+```bash
+ssh root@<SERVER_IP> "bash /tmp/test-reality-targets.sh"
+```
+
+### 选 target 的原则
+
+| 原则 | 原因 |
+|---|---|
+| 必须支持 **TLS 1.3** | REALITY 只工作在 TLS 1.3 |
+| 尽量**同 ASN / 地理邻近** | 每次握手都要连它取证书，越近越快；官方建议「从同一 ASN 借证书」 |
+| ❌ 避开 **apple / icloud** | Xray 二进制里明确警告：`Choosing apple, icloud, etc. as the target may get your IP blocked by the GFW` |
+| ❌ 避开 **Cloudflare 后面的站** | 未认证流量会被转发过去，你的服务器会变成 CF 的免费加速节点，可能被滥用 |
+| ❌ 不要用被墙域名 | 握手直接失败 |
+| ❌ 不要用国内域名 | 会产生回国流量，一眼 REALITY |
+
+---
+
+## bench-server.sh
+
+服务器侧基准测试工具：
+
+```bash
+bash bench-server.sh setup    # 装 iperf3/mtr + 开 BBR + 起 iperf3 服务端
+bash bench-server.sh report   # 系统 / Qdisc / 网卡流量 / VPS 自身出口测速
+bash bench-server.sh iperf-stop
+```
+
+配合客户端使用：
+
+```bash
+iperf3 -c <SERVER_IP> -p 5201 -t 30        # 单流（决定单线程体验）
+iperf3 -c <SERVER_IP> -p 5201 -t 30 -P 8   # 多流（决定总带宽上限）
+iperf3 -c <SERVER_IP> -p 5201 -u -b 200M   # UDP（评估 QUIC/Hysteria2 环境）
+```

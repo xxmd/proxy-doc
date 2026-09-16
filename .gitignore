@@ -1,0 +1,32 @@
+# ============================================================
+#  🔒 真实凭据 —— 绝对不要提交到 git
+# ============================================================
+
+# 整个 secrets 目录排除，但保留说明文件
+secrets/*
+!secrets/README.md
+
+# ---------- 脚本运行产物 ----------
+probe-out/
+probe-data/
+probe-data2/
+bench-out/
+*.log
+probe-nodes-*.csv
+bench-client-*.csv
+bench-nodes-*.csv
+
+# ---------- 客户端配置文件（含密钥，若从 example 复制而来）----------
+client/clash-hk.yaml
+client/client-test.yaml
+
+# ---------- 编辑器 / 系统 ----------
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---------- Python / Node（备用）----------
+__pycache__/
+node_modules/

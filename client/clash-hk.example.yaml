@@ -1,0 +1,87 @@
+# ============================================================
+#  Clash / mihomo 配置模板
+#  节点：VLESS + XTLS-Vision + REALITY
+#  适用：Clash Verge Rev / Mihomo Party / FlClash（mihomo 内核）
+#
+#  使用前把 <PLACEHOLDER> 全部替换成自己的值。
+#  真实值可从 secrets/clash-hk.yaml 获取。
+# ============================================================
+
+# ---------- 基础 ----------
+mixed-port: 7890
+allow-lan: false                  # 不要开！开了同网段任何人都能白嫖你的代理
+bind-address: 127.0.0.1
+mode: rule
+log-level: info
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+global-client-fingerprint: chrome
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# ---------- DNS（全部走 DoH）----------
+# 说明：1.1.1.1 / 8.8.8.8 在国内实测 TCP/443 完全不通，
+#       明文 UDP/53 虽通但返回投毒结果，所以不要用它们做 fallback。
+dns:
+  enable: true
+  ipv6: false
+  listen: 127.0.0.1:1053          # 只监听本机，不要开 0.0.0.0
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '+.msftconnecttest.com'
+    - '+.msftncsi.com'
+    - 'localhost.ptlogin2.qq.com'
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - 'https://223.5.5.5/dns-query'
+    - 'https://doh.pub/dns-query'
+  proxy-server-nameserver:        # 解析代理服务器域名用，必须国内可达
+    - 'https://223.5.5.5/dns-query'
+    - 'https://doh.pub/dns-query'
+
+# ---------- 节点 ----------
+proxies:
+  - name: 'HK-Reality'
+    type: vless
+    server: <SERVER_IP>
+    port: 443
+    uuid: <UUID>
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: <TARGET_DOMAIN>       # 必须和服务端 serverNames 完全一致
+    client-fingerprint: chrome        # uTLS，REALITY 强制要求
+    reality-opts:
+      public-key: <PUBLIC_KEY>        # = xray x25519 -i "<私钥>" 的 Password (PublicKey)
+      short-id: <SHORT_ID>
+
+# ---------- 策略组 ----------
+proxy-groups:
+  - name: 'PROXY'
+    type: select
+    proxies: ['AUTO', 'HK-Reality', 'DIRECT']
+
+  - name: 'AUTO'                      # 用 url-test 而不是 fallback，
+    type: url-test                    # fallback 会永远停在列表第一个节点
+    url: 'https://www.gstatic.com/generate_204'
+    interval: 300
+    tolerance: 50
+    lazy: true
+    proxies: ['HK-Reality']
+
+# ---------- 规则 ----------
+rules:
+  - 'GEOIP,private,DIRECT,no-resolve'
+  # 如果启动时报 GEOSITE 相关错误，把下面这行删掉即可
+  - 'GEOSITE,cn,DIRECT'
+  - 'GEOIP,CN,DIRECT'
+  - 'MATCH,PROXY'
