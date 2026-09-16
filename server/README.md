@@ -38,7 +38,7 @@
 5. 重启服务并做一次本机伪装自测
 
 ```bash
-scp ../secrets/xray-config.json xray-setup.sh root@<SERVER_IP>:/tmp/
+scp xray-config.json xray-setup.sh root@<SERVER_IP>:/tmp/
 ssh root@<SERVER_IP> "bash /tmp/xray-setup.sh /tmp/xray-config.json"
 ```
 

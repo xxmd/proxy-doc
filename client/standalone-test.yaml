@@ -1,0 +1,31 @@
+# 独立内核端到端测试配置（VLESS + XTLS-Vision + REALITY）
+# 端口与 Clash Verge 隔离：mixed 7899 / API 9099
+mixed-port: 7899
+allow-lan: false
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: false
+external-controller: 127.0.0.1:9099
+secret: ''
+dns:
+  enable: false
+proxies:
+  - name: HK-Reality
+    type: vless
+    server: 47.76.25.174
+    port: 443
+    uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.microsoft.com
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: pkRXGVRAllSNLATNBPMP7KuDe0ej5BsbsKrUEfXAM2k
+      short-id: 95d78701bfdcb44b
+proxy-groups:
+  - { name: PROBE, type: select, proxies: [HK-Reality] }
+rules:
+  - 'MATCH,PROBE'

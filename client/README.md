@@ -6,7 +6,7 @@
 
 ## clash-hk.example.yaml
 
-Clash / mihomo 配置模板。复制成 `clash-hk.yaml` 并填入真实值（或直接从 `secrets/` 取现成的）。
+Clash / mihomo 配置模板。仓库里已有可直接使用的 `clash-hk.yaml`；本模板是给你换机/分享用的占位符版本。
 
 ### 需要替换的占位符
 

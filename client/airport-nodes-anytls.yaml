@@ -1,0 +1,54 @@
+# Minimal config for entry/exit probing only (independent instance, ports isolated from Verge)
+mixed-port: 7899
+allow-lan: false
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: false
+external-controller: 127.0.0.1:9099
+secret: ''
+profile:
+  store-selected: false
+dns:
+  enable: false
+proxies:
+  - { name: 'Hong Kong 01', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 601, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Hong Kong 02', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 602, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Hong Kong 03', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 603, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Hong Kong 04', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 604, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Hong Kong 05', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 605, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Taiwan 01', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 621, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Taiwan 02', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 622, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Taiwan 03', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 623, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Taiwan 04', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 624, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Taiwan 05', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 625, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Singapore 01', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 641, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Singapore 02', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 642, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Singapore 03', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 643, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Singapore 04', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 644, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Singapore 05', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 645, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Japan 01', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 661, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Japan 02', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 662, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Japan 03', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 663, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Japan 04', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 664, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Japan 05', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 665, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Korea', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 681, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'United States 01', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 701, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'United States 02', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 702, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'United States 03', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 703, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'United States 04', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 704, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'United States 05', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 705, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: down-30005.sz.gfp.tencent-cloud.com, skip-cert-verify: true }
+  - { name: 'Great Britain', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 721, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Canada', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 741, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'France', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 751, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Germany', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 761, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Philippines', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 771, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Netherlands', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 781, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Turkey', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 791, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Vietnam', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 801, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Malaysia', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 811, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+  - { name: 'Thailand', type: anytls, server: y72zuz0pah.yn33dfs2.sbs, port: 821, password: fb8b71c6-e899-4d59-bd5b-c049a62549f3, udp: true, client-fingerprint: chrome, sni: emUCdFoC4M3oCW.oss-cn-shanghai.aliyuncs.com, skip-cert-verify: true }
+proxy-groups:
+  - { name: PROBE, type: select, proxies: ['Hong Kong 01', 'Hong Kong 02', 'Hong Kong 03', 'Hong Kong 04', 'Hong Kong 05', 'Taiwan 01', 'Taiwan 02', 'Taiwan 03', 'Taiwan 04', 'Taiwan 05', 'Singapore 01', 'Singapore 02', 'Singapore 03', 'Singapore 04', 'Singapore 05', 'Japan 01', 'Japan 02', 'Japan 03', 'Japan 04', 'Japan 05', 'Korea', 'United States 01', 'United States 02', 'United States 03', 'United States 04', 'United States 05', 'Great Britain', 'Canada', 'France', 'Germany', 'Philippines', 'Netherlands', 'Turkey', 'Vietnam', 'Malaysia', 'Thailand'] }
+rules:
+  - 'MATCH,PROBE'

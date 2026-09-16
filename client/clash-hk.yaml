@@ -1,0 +1,83 @@
+# ============================================================
+#  Clash / mihomo 配置
+#  节点：阿里云香港  VLESS + XTLS-Vision + REALITY
+#  服务端：47.76.25.174:443     SNI：www.microsoft.com
+#  适用：Clash Verge Rev / Mihomo Party / FlClash（mihomo 内核）
+# ============================================================
+
+# ---------- 基础 ----------
+mixed-port: 7890
+allow-lan: false
+bind-address: 127.0.0.1
+mode: rule
+log-level: info
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+global-client-fingerprint: chrome
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# ---------- DNS（全部走 DoH，不用明文，避免被投毒）----------
+dns:
+  enable: true
+  ipv6: false
+  listen: 127.0.0.1:1053          # 只监听本机，不要开 0.0.0.0
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '+.msftconnecttest.com'
+    - '+.msftncsi.com'
+    - 'localhost.ptlogin2.qq.com'
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - 'https://223.5.5.5/dns-query'
+    - 'https://doh.pub/dns-query'
+  proxy-server-nameserver:        # 解析代理服务器地址用的，必须国内可达
+    - 'https://223.5.5.5/dns-query'
+    - 'https://doh.pub/dns-query'
+
+# ---------- 节点 ----------
+proxies:
+  - name: 'HK-Reality'
+    type: vless
+    server: 47.76.25.174
+    port: 443
+    uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.hkex.com.hk        # 必须和服务端 serverNames 一致
+    client-fingerprint: chrome         # uTLS，REALITY 强制要求
+    reality-opts:
+      public-key: pkRXGVRAllSNLATNBPMP7KuDe0ej5BsbsKrUEfXAM2k
+      short-id: 95d78701bfdcb44b
+
+# ---------- 策略组 ----------
+proxy-groups:
+  - name: 'PROXY'
+    type: select
+    proxies: ['AUTO', 'HK-Reality', 'DIRECT']
+
+  - name: 'AUTO'
+    type: url-test
+    url: 'https://www.gstatic.com/generate_204'
+    interval: 300
+    tolerance: 50
+    lazy: true
+    proxies: ['HK-Reality']
+
+# ---------- 规则 ----------
+rules:
+  - 'GEOIP,private,DIRECT,no-resolve'
+  # 如果启动时报 GEOSITE 相关错误，把下面这行删掉即可
+  - 'GEOSITE,cn,DIRECT'
+  - 'GEOIP,CN,DIRECT'
+  - 'MATCH,PROXY'
