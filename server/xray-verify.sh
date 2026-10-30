@@ -61,6 +61,17 @@ echo "[2/5] 服务状态与端口"
 systemctl is-active --quiet xray && ok "xray.service active" || bad "xray.service 未运行"
 if ss -tlnp 2>/dev/null | grep -q ':443'; then ok "443 端口已监听"; else bad "443 未监听"; fi
 
+# 版本门槛：mihomo（Clash Verge / Mihomo Party / FlClash / OpenClash）只能连 ≤ v26.6.27 的 REALITY 服务端
+VER=$($XRAY version 2>/dev/null | head -n1 | awk '{print $2}')
+if [ -n "$VER" ]; then
+  IFS=. read -r V1 V2 V3 <<< "$VER"
+  if [ -n "$V1" ] && { [ "$V1" -gt 26 ] || { [ "$V1" -eq 26 ] && { [ "$V2" -gt 6 ] || { [ "$V2" -eq 6 ] && [ "$V3" -gt 27 ]; }; }; }; }; then
+    bad "Xray $VER 高于 v26.6.27 —— mihomo 系客户端会 REALITY 认证失败、节点 Timeout（见 docs/03-排错记录.md 坑 10）"
+  else
+    ok "Xray $VER（≤ v26.6.27，mihomo 兼容）"
+  fi
+fi
+
 # ---------- 3. 伪装效果（未认证流量应被转发到真实网站）----------
 echo
 echo "[3/5] REALITY 伪装（未认证流量 → 真实网站）"
@@ -125,7 +136,11 @@ echo "=========================================="
 echo " 通过 $PASS 项，失败 $FAIL 项"
 echo "=========================================="
 if [ "$FAIL" -eq 0 ]; then
-  echo "全部通过 ✅  客户端可以正常连接了"
+  echo "全部通过 ✅"
+  echo
+  echo "⚠️ 注意：本脚本用的是 Xray 官方客户端，它能通 ≠ mihomo/Clash Verge 能通。"
+  echo "   如果这里全绿、Clash Verge 里还是 Timeout，那是 REALITY 客户端版本不兼容，"
+  echo "   看 docs/03-排错记录.md 坑 10（服务端要锁在 ≤ v26.6.27）。"
 else
   echo "有失败项 ❌  排查建议："
   echo "  · target 相关失败 → 跑 test-reality-targets.sh 换一个 target"

@@ -21,7 +21,7 @@ proxies:
   # ---------- 自建：阿里云香港 REALITY ----------
   - name: 'HK-Self'
     type: vless
-    server: 47.76.25.174
+    server: 47.86.26.23
     port: 443
     uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
     network: tcp

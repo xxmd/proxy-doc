@@ -17,16 +17,20 @@ cd proxy
 #    打开 Clash Verge → 「配置」页 → 把 client\clash-hk.yaml 拖进去 → 点击激活
 #    到「代理」页确认 PROXY 组选中 HK-Reality
 
-# 3. 验证：浏览器打开 https://ip.sb ，出口 IP 应为 47.76.25.174
+# 3. 验证：浏览器打开 https://ip.sb ，出口 IP 应为 47.86.26.23
 ```
 
 **节点信息**（完整凭据见 `docs/04-完整配置信息.md`）：
 
 | 项目 | 值 |
 |---|---|
-| 地址 / 端口 | `47.76.25.174:443` |
+| 地址 / 端口 | `47.86.26.23:443` |
 | 协议 | VLESS + XTLS-Vision + REALITY |
 | SNI | `www.hkex.com.hk` |
+| 服务端 Xray | **v26.6.27（锁定，不要升）** |
+
+> ⚠️ **服务器上的 Xray 不要升到 v26.7.11 以上、尤其是 v26.9.9 以上** —— 新版 REALITY 服务端会拒绝 mihomo
+> （Clash Verge 内核）的认证，节点直接 `Timeout`。原因和实测数据见 `docs/03-排错记录.md` **坑 10**。
 
 ---
 
@@ -66,7 +70,7 @@ cd proxy
 └── docs/                          ← 经验与方法论
     ├── 01-REALITY原理.md          ← VLESS / Vision / REALITY 各干什么
     ├── 02-部署记录.md             ← 本次部署的参数与验证结果
-    ├── 03-排错记录.md             ← 踩过的 9 个坑
+    ├── 03-排错记录.md             ← 踩过的 10 个坑
     ├── 04-完整配置信息.md          ← 🔑 全部凭据 + 恢复步骤
     └── airport-probe-result.csv   ← 机场 36 节点落地探测原始数据
 ```
@@ -78,22 +82,27 @@ cd proxy
 ### 服务器重装后重新部署
 
 ```bash
-# 装依赖 + Xray
+# 装依赖 + Xray（⚠️ 必须锁 v26.6.27，装 latest 会让 Clash Verge 连不上，见 docs/03-排错记录.md 坑 10）
 apt-get update -qq && apt-get install -y -qq unzip
 curl -fsSL -o /tmp/xray-install.sh https://github.com/XTLS/Xray-install/raw/main/install-release.sh
 bash /tmp/xray-install.sh install
+curl -fsSL -o /tmp/x.zip https://github.com/XTLS/Xray-core/releases/download/v26.6.27/Xray-linux-64.zip
+unzip -oq /tmp/x.zip -d /tmp/xr26627 && install -m 0755 /tmp/xr26627/xray /usr/local/bin/xray
 
 # 上传并部署
 scp server/xray-config.json server/*.sh root@<SERVER_IP>:/tmp/
 ssh root@<SERVER_IP> "bash /tmp/xray-setup.sh /tmp/xray-config.json"
 ssh root@<SERVER_IP> "bash /tmp/xray-verify.sh"
+
+# ⚠️ xray-verify.sh 用的是 Xray 自家客户端，它能通 ≠ mihomo 能通。
+#    最终验收一定要用 mihomo/Clash Verge 连一次。
 ```
 
 ### 线路变差了，做一次体检
 
 ```powershell
 # 入口链路：延迟 / 丢包 / 路由 AS / 端口可达性
-.\client\bench-client.ps1 -ServerIP 47.76.25.174 -Port 443 -ProxyName "HK-Reality"
+.\client\bench-client.ps1 -ServerIP 47.86.26.23 -Port 443 -ProxyName "HK-Reality"
 
 # 逐节点落地真身（需要 Clash 运行且开启 external-controller）
 .\client\bench-nodes.ps1 -GeoOnly
@@ -153,6 +162,18 @@ Xray 26.x 上实测：
 ### 4. 机场的「多国节点」常常是缩水的
 
 某个机场 36 个节点实测：**36 个出口 IP 但只有 10 个 ASN，25 个来自同一家**；「台湾节点」TCP 握手实测 292ms（台北到上海物理上不可能），属典型假落地。详见 `docs/03-排错记录.md`。
+
+### 5. `Timeout` 不一定是墙、不一定是 TUN，很可能是**版本不兼容** ⭐⭐
+
+Clash Verge 里节点一直 `Timeout`，而同一台机器上用 **Xray 官方客户端**连同一个节点秒通 —— 这时问题基本就锁定在
+「客户端实现 ↔ 服务端版本」上了。实测根因：**Xray ≥ v26.9.9 的 REALITY 服务端强制要求 ClientHello 带
+`X25519MLKEM768`（后量子混合密钥），而 mihomo 只发纯 X25519**，于是被当成探测流量转发给真站，客户端报
+`REALITY authentication failed`，界面显示 `Timeout`。另外 Xray v26.7.11~v26.7.28 还额外有
+`minClientVer=26.3.27` 的门槛（mihomo 上报的版本是 `1.8.2`）。
+
+**结论**：只要客户端是 mihomo 系（Clash Verge / Mihomo Party / FlClash / OpenClash），服务端 Xray 就必须锁在
+**≤ v26.6.27**（v26.7.28 需手写 `"minClientVer": "0.0.0"`）。完整证据链、源码依据和 A/B 对照表见
+`docs/03-排错记录.md` **坑 10**。
 
 ---
 

@@ -1,6 +1,30 @@
 # server/ —— 服务端脚本
 
-在 VPS（Ubuntu 24.04）上运行。
+在 VPS（Ubuntu 24.04 / 26.04）上运行。
+
+---
+
+## ⚠️ 0. 先看这一条：Xray 版本必须锁在 ≤ v26.6.27
+
+如果客户端是 **mihomo 系**（Clash Verge / Mihomo Party / FlClash / OpenClash），服务端 Xray **不能**随便升级：
+
+| 服务端 Xray | mihomo 能不能连 | 原因 |
+|---|---|---|
+| ≤ v26.6.27 | ✅ | REALITY 认证接受纯 X25519 客户端 |
+| v26.7.11 ~ v26.7.28 | ⚠️ 默认不行 | REALITY 服务端默认 `minClientVer = 26.3.27`，mihomo 上报 `1.8.2`，被拒。手写 `"minClientVer": "0.0.0"` 可解 |
+| ≥ v26.9.9 | ❌ 怎么配都不行 | REALITY 服务端**强制要求** ClientHello 带 `X25519MLKEM768`，mihomo 只发纯 X25519，认证根本进不去 |
+
+安装 / 重装时这样锁版本：
+
+```bash
+curl -fsSL -o /tmp/x.zip https://github.com/XTLS/Xray-core/releases/download/v26.6.27/Xray-linux-64.zip
+unzip -oq /tmp/x.zip -d /tmp/xr26627
+install -m 0755 /tmp/xr26627/xray /usr/local/bin/xray
+xray version | head -1     # 必须是 Xray 26.6.27
+```
+
+> `bash install-release.sh install` 默认装 **latest**，会把版本悄悄带上去 → Clash Verge 立刻变回 Timeout。
+> 完整证据链见 `../docs/03-排错记录.md` **坑 10**。`xray-verify.sh` 会自动检查这一条。
 
 ---
 
@@ -46,12 +70,16 @@ ssh root@<SERVER_IP> "bash /tmp/xray-setup.sh /tmp/xray-config.json"
 
 ## xray-verify.sh
 
-**全链路自检**，自动从已部署的配置里读取 UUID / 私钥 / shortId / target，无需手填。验证四项：
+**全链路自检**，自动从已部署的配置里读取 UUID / 私钥 / shortId / target，无需手填。验证五项：
 
 1. 配置语法
-2. 服务状态 + 443 监听
+2. 服务状态 + 443 监听 + **Xray 版本门槛**（高于 v26.6.27 会直接报红）
 3. **伪装效果**：未认证流量是否被原样转发到真实网站（应返回真站的 HTTP 状态码 + 证书校验通过）
 4. **代理链路**：本机起一个 Xray 客户端实例走完整协议栈，测试 google / youtube / baidu（baidu 应失败，验证禁回国规则）
+5. BBR / fq 是否生效
+
+> ⚠️ 第 4 步用的是 **Xray 官方客户端**，它和你的 mihomo 不是同一个实现。这里全绿**不代表** Clash Verge 能连，
+> 最终验收必须再用 mihomo 连一次（原因见 `../docs/03-排错记录.md` 坑 10）。
 
 ```bash
 ssh root@<SERVER_IP> "bash /tmp/xray-verify.sh"

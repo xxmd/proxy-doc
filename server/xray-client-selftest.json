@@ -39,9 +39,9 @@
         "network": "tcp",
         "security": "reality",
         "realitySettings": {
-          "serverName": "www.microsoft.com",
+          "serverName": "www.hkex.com.hk",
           "fingerprint": "chrome",
-          "publicKey": "pkRXGVRAllSNLATNBPMP7KuDe0ej5BsbsKrUEfXAM2k",
+          "password": "pkRXGVRAllSNLATNBPMP7KuDe0ej5BsbsKrUEfXAM2k",
           "shortId": "95d78701bfdcb44b",
           "spiderX": "/"
         }

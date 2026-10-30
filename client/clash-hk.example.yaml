@@ -5,6 +5,9 @@
 #
 #  使用前把 <PLACEHOLDER> 全部替换成自己的值。
 #  真实值可从 secrets/clash-hk.yaml 获取。
+#
+#  ⚠️ 服务端 Xray 必须 ≤ v26.6.27，否则 mihomo 的 REALITY 认证会被拒（节点 Timeout）。
+#     原因见 docs/03-排错记录.md 坑 10。
 # ============================================================
 
 # ---------- 基础 ----------
@@ -16,7 +19,8 @@ log-level: info
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
-global-client-fingerprint: chrome
+# 注意：mihomo v1.19.29+ 已移除 global-client-fingerprint，写了会报错，
+# 指纹统一在节点里用 client-fingerprint 指定。
 
 profile:
   store-selected: true

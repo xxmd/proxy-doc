@@ -68,6 +68,21 @@ journalctl -u xray -n 15 --no-pager
 
 echo
 echo "=== 10. 本机自测：REALITY 伪装是否生效 ==="
-echo "-- 用 www.microsoft.com 的 SNI 连本机 443，应返回微软真实响应 --"
+# 必须用配置里真正的 dest 域名做 SNI；用别的域名会被转发到 target、证书对不上，看不出伪装效果
+TARGET_HOST=$(grep -o '"dest"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONF_DST" | head -n1 | sed 's/.*"\([^"]*\)"$/\1/')
+TARGET_HOST=${TARGET_HOST%%:*}
+echo "-- 用 $TARGET_HOST 的 SNI 连本机 443，应返回目标站真实响应 + 证书校验通过 --"
 curl -s -o /dev/null -w "http_code=%{http_code}  ssl_verify=%{ssl_verify_result}  time=%{time_total}s\n" \
-  --resolve www.microsoft.com:443:127.0.0.1 https://www.microsoft.com --max-time 15
+  --resolve "$TARGET_HOST:443:127.0.0.1" "https://$TARGET_HOST" --max-time 15
+
+echo
+echo "=== 11. 版本门槛检查（mihomo / Clash Verge 兼容性）==="
+VER=$(/usr/local/bin/xray version 2>/dev/null | head -n1 | awk '{print $2}')
+echo -n "xray 版本 = ${VER:-未知}"
+IFS=. read -r V1 V2 V3 <<< "$VER"
+if [ -n "$V1" ] && { [ "$V1" -gt 26 ] || { [ "$V1" -eq 26 ] && { [ "$V2" -gt 6 ] || { [ "$V2" -eq 6 ] && [ "$V3" -gt 27 ]; }; }; }; }; then
+  echo "  ⚠️ 高于 v26.6.27：Clash Verge（mihomo）会 REALITY 认证失败 → 节点 Timeout"
+  echo "     原因见 docs/03-排错记录.md 坑 10；降级：install -m 0755 /tmp/xr26627/xray /usr/local/bin/xray"
+else
+  echo "  ✅ ≤ v26.6.27，mihomo 可连"
+fi

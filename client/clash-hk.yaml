@@ -1,7 +1,7 @@
 # ============================================================
 #  Clash / mihomo 配置
 #  节点：阿里云香港  VLESS + XTLS-Vision + REALITY
-#  服务端：47.76.25.174:443     SNI：www.microsoft.com
+#  服务端：47.86.26.23:443     SNI：www.hkex.com.hk
 #  适用：Clash Verge Rev / Mihomo Party / FlClash（mihomo 内核）
 # ============================================================
 
@@ -14,7 +14,9 @@ log-level: info
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
-global-client-fingerprint: chrome
+# 注意：mihomo v1.19.29+ 已移除 global-client-fingerprint，写了会报
+# "The global-client-fingerprint configuration is removed"。
+# 指纹统一在节点里用 client-fingerprint 指定（见下方 proxies）。
 
 profile:
   store-selected: true
@@ -47,7 +49,7 @@ dns:
 proxies:
   - name: 'HK-Reality'
     type: vless
-    server: 47.76.25.174
+    server: 47.86.26.23
     port: 443
     uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
     network: tcp

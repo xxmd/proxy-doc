@@ -37,6 +37,24 @@ Clash / mihomo 配置模板。仓库里已有可直接使用的 `clash-hk.yaml`�
 
 > TUN 模式和系统代理都可以正常开着，不影响。
 
+### 节点显示 Timeout 时，第一步做什么
+
+**不要先怀疑 TUN、DNS、防火墙。** 先看 mihomo 自己的报错：
+
+1. 把配置里 `log-level` 改成 `debug`，或 Clash Verge →「设置」→ 日志等级 `debug`
+2. 日志页看 `dial HK-Reality` 那一行，如果是：
+
+   ```text
+   connect error: REALITY authentication failed
+   ```
+
+   → **不是网络问题，是服务端版本不兼容**：mihomo 的 REALITY 认证被服务端拒了（服务端 Xray ≥ v26.7.11 的门槛）。
+   解决办法是把服务端 Xray 降回 **≤ v26.6.27**，详见 `../docs/03-排错记录.md` **坑 10**。
+
+3. 对照实验（5 分钟定性）：同一个节点参数用 **Xray 官方客户端** 连一次。
+   - Xray 客户端通、mihomo 不通 → 客户端实现/版本问题（就是上面这种）
+   - 两个都不通 → 才轮到怀疑服务器、网络、防火墙
+
 ---
 
 ## bench-client.ps1
