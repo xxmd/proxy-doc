@@ -1,8 +1,14 @@
 # ============================================================
 #  Clash / mihomo 配置
-#  节点：阿里云香港  VLESS + XTLS-Vision + REALITY
-#  服务端：47.86.26.23:443     SNI：www.hkex.com.hk
+#  节点：VLESS + XTLS-Vision + REALITY
+#  服务端：85.189.40.202:443（野草云，香港落地）  SNI：www.hkex.com.hk
 #  适用：Clash Verge Rev / Mihomo Party / FlClash（mihomo 内核）
+#
+#  ⚠️ 注意：
+#  - 节点名仍叫 HK-Reality，但 server 已指向野草云而不是阿里云 47.86.26.23；
+#    阿里云那份配置由 http://47.86.26.23/clash-hk.yaml 单独下发。
+#  - 想两台一起对比，用 client/clash-two-nodes.yaml。
+#  - 服务端 Xray 必须 <= v26.6.27（docs/03-排错记录.md 坑 10）。
 # ============================================================
 
 # ---------- 基础 ----------
@@ -49,7 +55,7 @@ dns:
 proxies:
   - name: 'HK-Reality'
     type: vless
-    server: 47.86.26.23
+    server: 85.189.40.202
     port: 443
     uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
     network: tcp

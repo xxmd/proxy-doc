@@ -70,7 +70,7 @@ cd proxy
 └── docs/                          ← 经验与方法论
     ├── 01-REALITY原理.md          ← VLESS / Vision / REALITY 各干什么
     ├── 02-部署记录.md             ← 本次部署的参数与验证结果
-    ├── 03-排错记录.md             ← 踩过的 10 个坑
+    ├── 03-排错记录.md             ← 踩过的 11 个坑
     ├── 04-完整配置信息.md          ← 🔑 全部凭据 + 恢复步骤
     └── airport-probe-result.csv   ← 机场 36 节点落地探测原始数据
 ```
@@ -174,6 +174,23 @@ Clash Verge 里节点一直 `Timeout`，而同一台机器上用 **Xray 官方�
 **结论**：只要客户端是 mihomo 系（Clash Verge / Mihomo Party / FlClash / OpenClash），服务端 Xray 就必须锁在
 **≤ v26.6.27**（v26.7.28 需手写 `"minClientVer": "0.0.0"`）。完整证据链、源码依据和 A/B 对照表见
 `docs/03-排错记录.md` **坑 10**。
+
+### 6. 「节点没速度 / Timeout」大概率是测速地址被自己的规则拦了 ⭐
+
+`URLTest` 默认测速地址是 `https://www.gstatic.com/generate_204`，而 `www.gstatic.com` 有一个 A 记录
+`203.208.49.66` 是 **Google 给中国大陆的前置 IP（geoip=CN）**，会命中服务端的 `geoip:cn → block`（禁回国流量）
+→ 测速请求被 blackhole → 界面上就没有延迟数字，**但节点本身完全正常**。
+
+**这不是节点问题，也不是手机/客户端兼容性问题**，两个节点表现一模一样；"偶发"只是因为 gstatic 有多个 A 记录，
+解析到美国 IP 时测速就成功。服务端修法就一条规则（`server/xray-config.json` 已内置）：
+
+```json
+{ "type": "field", "domain": ["domain:gstatic.com", "domain:googleapis.cn", "domain:google.cn"], "outboundTag": "direct" }
+```
+
+放在 block 规则**之前**即可。修完实测 gstatic 测速 `0/6 → 6/6`，而 `baidu` 走代理仍然失败（禁回国没被破坏）。
+想测更准的延迟，客户端可用 `https://cp.cloudflare.com/generate_204`。详见 `docs/03-排错记录.md` **坑 11**
+和根目录的 [测速Timeout-根因与修复.md](测速Timeout-根因与修复.md)。
 
 ---
 

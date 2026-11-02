@@ -1,0 +1,107 @@
+# ============================================================
+#  Clash / mihomo 配置：两个自建节点并排对比
+#    1. ALI-HK   阿里云香港        47.86.26.23
+#    2. YECAO-HK 野草云（香港落地） 85.189.40.202
+#
+#  两台服务器共用同一套 UUID / REALITY 公钥 / shortId，
+#  所以两个节点只有 server 不同。换其中一台的密钥时两台都要改。
+#
+#  ⚠️ 服务端 Xray 必须 <= v26.6.27（见 docs/03-排错记录.md 坑 10）。
+#  ⚠️ 测速地址不要用 www.gstatic.com：它会解析到 Google 的中国前置 IP
+#     203.208.49.66（geoip=CN），被服务端的“禁回国流量”规则 block，
+#     表现为节点没有延迟/Timeout，但其实节点可用。详见
+#     移动端与电脑端节点测速现象-待诊断.md。
+# ============================================================
+
+# ---------- 基础 ----------
+mixed-port: 7890
+allow-lan: false
+bind-address: 127.0.0.1
+mode: rule
+log-level: info
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# ---------- DNS（全部走 DoH，避免投毒）----------
+dns:
+  enable: true
+  ipv6: false
+  listen: 127.0.0.1:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '+.msftconnecttest.com'
+    - '+.msftncsi.com'
+    - 'localhost.ptlogin2.qq.com'
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - 'https://223.5.5.5/dns-query'
+    - 'https://doh.pub/dns-query'
+  proxy-server-nameserver:
+    - 'https://223.5.5.5/dns-query'
+    - 'https://doh.pub/dns-query'
+
+# ---------- 节点 ----------
+proxies:
+  - name: 'ALI-HK'
+    type: vless
+    server: 47.86.26.23
+    port: 443
+    uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.hkex.com.hk
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: pkRXGVRAllSNLATNBPMP7KuDe0ej5BsbsKrUEfXAM2k
+      short-id: 95d78701bfdcb44b
+
+  - name: 'YECAO-HK'
+    type: vless
+    server: 85.189.40.202
+    port: 443
+    uuid: 367e8d69-3769-4355-857d-f2c48db57ecf
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.hkex.com.hk
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: pkRXGVRAllSNLATNBPMP7KuDe0ej5BsbsKrUEfXAM2k
+      short-id: 95d78701bfdcb44b
+
+# ---------- 策略组 ----------
+proxy-groups:
+  - name: 'PROXY'
+    type: select
+    proxies: ['AUTO', 'ALI-HK', 'YECAO-HK', 'DIRECT']
+
+  # 测速地址用 cp.cloudflare.com：Cloudflare 的 IP 不会落进 geoip:cn，
+  # 两个节点的成功率都是 100%（www.gstatic.com 是 0%）。
+  - name: 'AUTO'
+    type: url-test
+    url: 'https://cp.cloudflare.com/generate_204'
+    interval: 300
+    timeout: 5000
+    tolerance: 50
+    lazy: true
+    proxies: ['ALI-HK', 'YECAO-HK']
+
+# ---------- 规则 ----------
+rules:
+  - 'GEOIP,private,DIRECT,no-resolve'
+  - 'GEOSITE,cn,DIRECT'
+  - 'GEOIP,CN,DIRECT'
+  - 'MATCH,PROXY'

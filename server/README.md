@@ -33,6 +33,10 @@ xray version | head -1     # 必须是 Xray 26.6.27
 服务端配置模板，含完整的 VLESS + XTLS-Vision + REALITY 配置，以及：
 
 - **禁回国流量**：`geosite:cn` / `geoip:cn` → `block`（用代理访问境内网站会被标记为代理 IP）
+- **例外白名单（必须放在 block 之前）**：`domain:gstatic.com` / `googleapis.cn` / `google.cn` → `direct`。
+  原因：`www.gstatic.com` 会解析到 Google 的中国前置 IP `203.208.49.66`（geoip=CN），
+  不放行的话客户端默认测速地址永远失败，界面上就是"节点没速度 / Timeout"，但节点其实是好的。
+  详见 `../docs/03-排错记录.md` 坑 11
 - **屏蔽 BT**：`bittorrent` → `block`
 - **policy 去默认值**：`handshake: 3` / `connIdle: 180`（默认的 60/300 是明显指纹）
 - **只监听 IPv4**：`domainStrategy: UseIPv4`（v4-only 机器避免 IPv6 绕路）

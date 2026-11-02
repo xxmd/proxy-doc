@@ -37,9 +37,21 @@ Clash / mihomo 配置模板。仓库里已有可直接使用的 `clash-hk.yaml`�
 
 > TUN 模式和系统代理都可以正常开着，不影响。
 
-### 节点显示 Timeout 时，第一步做什么
+### 节点显示 Timeout / 没有延迟数字时，按这个顺序查
 
-**不要先怀疑 TUN、DNS、防火墙。** 先看 mihomo 自己的报错：
+**不要先怀疑 TUN、DNS、防火墙。** 分两种情况，先分清是哪一种：
+
+#### 情况 A：**只是没数字，但节点能上网** → 测速地址被服务端的禁回国规则拦了
+
+`URLTest` 默认用 `https://www.gstatic.com/generate_204`，而 `www.gstatic.com` 有一个 A 记录是
+Google 的中国前置 IP（`geoip=CN`），会被服务端 `geoip:cn → block` 拦掉 → 测速永远失败。
+**两个节点、手机电脑都会这样，跟节点好坏无关。**
+
+→ 服务端已修（`server/xray-config.json` 里 `domain:gstatic.com → direct` 放在 block 之前）。
+   客户端也可以自己把测速地址换成 `https://cp.cloudflare.com/generate_204`。
+   详见 `../docs/03-排错记录.md` **坑 11**。
+
+#### 情况 B：**连不上、日志里报认证失败** → 服务端 Xray 版本不兼容
 
 1. 把配置里 `log-level` 改成 `debug`，或 Clash Verge →「设置」→ 日志等级 `debug`
 2. 日志页看 `dial HK-Reality` 那一行，如果是：
