@@ -133,7 +133,7 @@ grep -c "processed invalid connection" /var/log/xray/error.log
 | **XTLS-Vision** | 处理 TLS-in-TLS 的包长与时序特征，这是 TLS 类代理最容易被识别的破绽 |
 | **端口 443** | 最不惹眼，且避免非标端口被 QoS |
 | **不用 WSS** | Xray 官方已将其列为 deprecated（ALPN 特征明显） |
-| **服务端屏蔽回国流量** | 用代理访问境内网站，代理 IP 会被记录/标记 |
+| **全部流量走代理，不分流** | 配置简单、行为可预期。只 block 私有地址（防止 LAN 被代理）和 BT（防阿里云判定滥用）。代价是访问国内站点也绕香港，个别站会因境外 IP 限流 |
 | **target 选香港本地站** | 握手时需要实时连目标站取证书，越近越快；官方建议「从同一 ASN 借证书」 |
 
 ---
@@ -178,19 +178,12 @@ Clash Verge 里节点一直 `Timeout`，而同一台机器上用 **Xray 官方�
 ### 6. 「节点没速度 / Timeout」大概率是测速地址被自己的规则拦了 ⭐
 
 `URLTest` 默认测速地址是 `https://www.gstatic.com/generate_204`，而 `www.gstatic.com` 有一个 A 记录
-`203.208.49.66` 是 **Google 给中国大陆的前置 IP（geoip=CN）**，会命中服务端的 `geoip:cn → block`（禁回国流量）
-→ 测速请求被 blackhole → 界面上就没有延迟数字，**但节点本身完全正常**。
+`203.208.49.66` 是 **Google 给中国大陆的前置 IP（geoip=CN）**。如果服务端有 `geoip:cn → block` 这类
+「禁回国」规则，测速请求就会被 blackhole → 界面没有延迟数字（`Timeout`/无速度），**但节点本身完全正常**。
+"偶发"只是因为 gstatic 有多个 A 记录，解析到美国 IP 时测速就成功。
 
-**这不是节点问题，也不是手机/客户端兼容性问题**，两个节点表现一模一样；"偶发"只是因为 gstatic 有多个 A 记录，
-解析到美国 IP 时测速就成功。服务端修法就一条规则（`server/xray-config.json` 已内置）：
-
-```json
-{ "type": "field", "domain": ["domain:gstatic.com", "domain:googleapis.cn", "domain:google.cn"], "outboundTag": "direct" }
-```
-
-放在 block 规则**之前**即可。修完实测 gstatic 测速 `0/6 → 6/6`，而 `baidu` 走代理仍然失败（禁回国没被破坏）。
-想测更准的延迟，客户端可用 `https://cp.cloudflare.com/generate_204`。详见 `docs/03-排错记录.md` **坑 11**
-和根目录的 [测速Timeout-根因与修复.md](测速Timeout-根因与修复.md)。
+**现在的做法**：直接把分流规则删了，**全部流量走代理**（服务端只 block 私有地址 + BT），
+这条坑自然消失 —— 实测 gstatic 测速 37 ms、baidu 走代理 200。详见 `docs/03-排错记录.md` **坑 11**。
 
 ---
 

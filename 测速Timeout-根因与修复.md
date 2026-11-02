@@ -1,7 +1,7 @@
 # 节点「没速度 / Timeout」的根因：测速地址被禁回国规则拦掉
 
-> 原文档叫《移动端与电脑端节点测速现象-待诊断》，2026-11-02 已定案并修复，改名留存。
-> 完整的技术细节见 `docs/03-排错记录.md` **坑 11**，这里只留结论。
+> 2026-11-02 定位并**已彻底解决**：分流规则全部删除，现在**全部流量走代理**。
+> 技术细节见 `docs/03-排错记录.md` **坑 11**，这里只留结论。
 
 ## 现象
 
@@ -12,40 +12,42 @@
 ## 根因（一句话）
 
 **测速地址 `https://www.gstatic.com/generate_204` 会解析到 Google 的中国前置 IP `203.208.49.66`（geoip=CN），
-命中服务端的「禁回国流量」规则被 block 掉——测速失败，节点本身没坏。**
+被服务端的「禁回国流量」规则 block 掉——测速失败，节点本身没坏。**
 
-所以这不是节点问题、不是手机兼容性问题、跟野草云也没关系，**两个节点一模一样**；
+所以不是节点问题、不是手机兼容性问题、跟野草云也没关系，**两个节点一模一样**；
 "偶发"是因为 gstatic 有多个 A 记录，解析到美国 IP 时测速就成功。
 
-服务端日志（`loglevel: info`）曾直接写着：
+## 最终解决：不做分流，全部流量走代理
 
-```text
-sniffed domain: www.gstatic.com
-taking detour [block] for [tcp:www.gstatic.com:443]
-```
+把 `geosite:cn` / `geoip:cn` 这套分流规则**全删了**（连带那行 gstatic 白名单也不需要了）。
 
-## 修复（2026-11-02 已上线，两台服务器都改了）
-
-服务端 `server/xray-config.json` 在 block 规则**之前**加一条白名单：
+**服务端** `server/xray-config.json` 现在只剩两条：
 
 ```json
-{ "type": "field", "domain": ["domain:gstatic.com", "domain:googleapis.cn", "domain:google.cn"], "outboundTag": "direct" }
+{ "type": "field", "ip": ["geoip:private"],    "outboundTag": "block" },   // 私有地址
+{ "type": "field", "protocol": ["bittorrent"], "outboundTag": "block" }    // 防滥用
 ```
 
-已部署到 `47.86.26.23`（阿里云）和 `85.189.40.202`（野草云），客户端**不用改任何东西**。
+**客户端** `client/clash-hk.yaml` 现在只剩两条：
 
-## 验证结果
+```yaml
+- 'GEOIP,private,DIRECT,no-resolve'   # 局域网直连
+- 'MATCH,PROXY'                        # 其余全部走代理
+```
 
-| 检查项 | 修复前 | 修复后 |
-|---|---|---|
-| 阿里云 gstatic 测速 | 0/6 失败 | **6/6 成功**（134–411 ms） |
-| 野草云 gstatic 测速 | 0/6 失败 | **6/6 成功**（35–48 ms） |
-| 两节点 `https://www.gstatic.com/generate_204` | 000 | **204** |
-| 两节点 baidu（禁回国） | 000 | **000**（规则没被破坏） |
-| 带宽（单连接 20 MB） | — | 阿里云 6.6–7.5 Mbps / 野草云 6.9–8.2 Mbps |
+两台服务器（`47.86.26.23` 阿里云、`85.189.40.202` 野草云）都已部署，客户端重新应用一次配置即可。
 
-> 阿里云 gstatic 延迟偏高（134–411 ms）是因为它真的去连了 Google 的中国前置 IP。
-> **想测更准的延迟，客户端把测速地址换成 `https://cp.cloudflare.com/generate_204`**（两节点都是 38–53 ms，很稳）。
+## 验证结果（两台都测）
+
+| 检查项 | 结果 |
+|---|---|
+| gstatic 测速 | **37 ms 成功**（原来 0/6 全失败） |
+| `https://www.baidu.com` 走代理 | **200** |
+| `https://www.taobao.com` 走代理 | **200** |
+| 出口 IP | 服务器 IP（说明确实走了代理） |
+| 规则命中 | mihomo 日志 `match Match using PROXY`，不再有 `DIRECT` 分流 |
+
+> 代价：访问国内站点也绕香港，个别站（如 `qq.com`）会对境外 IP 返回 501，属于正常现象。
 
 ## 顺带核实的两个事实
 
@@ -58,3 +60,4 @@ taking detour [block] for [tcp:www.gstatic.com:443]
 ## 一句话记住
 
 > **节点"没速度"先看是不是测速地址被拦，别急着关 TUN、换节点、改 DNS。**
+> 想要省事，就别搞分流 —— 全部走代理，什么都不会被误伤。

@@ -7,10 +7,6 @@
 #  所以两个节点只有 server 不同。换其中一台的密钥时两台都要改。
 #
 #  ⚠️ 服务端 Xray 必须 <= v26.6.27（见 docs/03-排错记录.md 坑 10）。
-#  ⚠️ 测速地址不要用 www.gstatic.com：它会解析到 Google 的中国前置 IP
-#     203.208.49.66（geoip=CN），被服务端的“禁回国流量”规则 block，
-#     表现为节点没有延迟/Timeout，但其实节点可用。详见
-#     移动端与电脑端节点测速现象-待诊断.md。
 # ============================================================
 
 # ---------- 基础 ----------
@@ -88,8 +84,6 @@ proxy-groups:
     type: select
     proxies: ['AUTO', 'ALI-HK', 'YECAO-HK', 'DIRECT']
 
-  # 测速地址用 cp.cloudflare.com：Cloudflare 的 IP 不会落进 geoip:cn，
-  # 两个节点的成功率都是 100%（www.gstatic.com 是 0%）。
   - name: 'AUTO'
     type: url-test
     url: 'https://cp.cloudflare.com/generate_204'
@@ -100,8 +94,7 @@ proxy-groups:
     proxies: ['ALI-HK', 'YECAO-HK']
 
 # ---------- 规则 ----------
+# 全部流量走代理，只留局域网直连。
 rules:
   - 'GEOIP,private,DIRECT,no-resolve'
-  - 'GEOSITE,cn,DIRECT'
-  - 'GEOIP,CN,DIRECT'
   - 'MATCH,PROXY'

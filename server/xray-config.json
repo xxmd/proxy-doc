@@ -62,22 +62,7 @@
     "rules": [
       {
         "type": "field",
-        "domain": ["domain:gstatic.com", "domain:googleapis.cn", "domain:google.cn"],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
         "ip": ["geoip:private"],
-        "outboundTag": "block"
-      },
-      {
-        "type": "field",
-        "domain": ["geosite:cn"],
-        "outboundTag": "block"
-      },
-      {
-        "type": "field",
-        "ip": ["geoip:cn"],
         "outboundTag": "block"
       },
       {

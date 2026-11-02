@@ -83,9 +83,8 @@ proxy-groups:
     proxies: ['HK-Reality']
 
 # ---------- 规则 ----------
+# 全部流量走代理，不做国内外分流。
+# 只留一条：局域网/私有地址直连（否则连路由器、NAS、打印机都会断）。
 rules:
   - 'GEOIP,private,DIRECT,no-resolve'
-  # 如果启动时报 GEOSITE 相关错误，把下面这行删掉即可
-  - 'GEOSITE,cn,DIRECT'
-  - 'GEOIP,CN,DIRECT'
   - 'MATCH,PROXY'

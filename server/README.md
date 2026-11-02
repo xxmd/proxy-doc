@@ -32,14 +32,16 @@ xray version | head -1     # 必须是 Xray 26.6.27
 
 服务端配置模板，含完整的 VLESS + XTLS-Vision + REALITY 配置，以及：
 
-- **禁回国流量**：`geosite:cn` / `geoip:cn` → `block`（用代理访问境内网站会被标记为代理 IP）
-- **例外白名单（必须放在 block 之前）**：`domain:gstatic.com` / `googleapis.cn` / `google.cn` → `direct`。
-  原因：`www.gstatic.com` 会解析到 Google 的中国前置 IP `203.208.49.66`（geoip=CN），
-  不放行的话客户端默认测速地址永远失败，界面上就是"节点没速度 / Timeout"，但节点其实是好的。
-  详见 `../docs/03-排错记录.md` 坑 11
-- **屏蔽 BT**：`bittorrent` → `block`
+- **全部流量走代理，不做分流**：`routing` 里只留两条 block
+- **只 block 两类**：
+  - `geoip:private` → 私有地址（防止客户端把局域网地址发上来）
+  - `bittorrent` → 防止服务器被判定滥用（阿里云对 BT 很敏感）
 - **policy 去默认值**：`handshake: 3` / `connIdle: 180`（默认的 60/300 是明显指纹）
 - **只监听 IPv4**：`domainStrategy: UseIPv4`（v4-only 机器避免 IPv6 绕路）
+
+> 早期版本有 `geosite:cn` / `geoip:cn` 的「禁回国」规则，2026-11-02 已删除：它会把
+> `www.gstatic.com`（解析到 Google 中国前置 IP）也拦掉，导致客户端默认测速地址永远失败
+> ——就是"节点没速度/Timeout"那次问题的根因。详见 `../docs/03-排错记录.md` 坑 11。
 
 ### 需要替换的占位符
 
@@ -79,7 +81,7 @@ ssh root@<SERVER_IP> "bash /tmp/xray-setup.sh /tmp/xray-config.json"
 1. 配置语法
 2. 服务状态 + 443 监听 + **Xray 版本门槛**（高于 v26.6.27 会直接报红）
 3. **伪装效果**：未认证流量是否被原样转发到真实网站（应返回真站的 HTTP 状态码 + 证书校验通过）
-4. **代理链路**：本机起一个 Xray 客户端实例走完整协议栈，测试 google / youtube / baidu（baidu 应失败，验证禁回国规则）
+4. **代理链路**：本机起一个 Xray 客户端实例走完整协议栈，测试 google / youtube / baidu（**全流量代理，三个都应通**）
 5. BBR / fq 是否生效
 
 > ⚠️ 第 4 步用的是 **Xray 官方客户端**，它和你的 mihomo 不是同一个实现。这里全绿**不代表** Clash Verge 能连，
@@ -94,7 +96,7 @@ ssh root@<SERVER_IP> "bash /tmp/xray-verify.sh"
 ```
 google  : 200  0.15s
 youtube : 200  0.26s
-baidu   : 000  0.04s  <- expect fail (CN blocked)
+baidu   : 200  0.26s   <- 全流量代理，国内站点也走代理
 exit IP : {"country":"Hong Kong", ...}
 ```
 

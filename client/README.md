@@ -41,14 +41,14 @@ Clash / mihomo 配置模板。仓库里已有可直接使用的 `clash-hk.yaml`�
 
 **不要先怀疑 TUN、DNS、防火墙。** 分两种情况，先分清是哪一种：
 
-#### 情况 A：**只是没数字，但节点能上网** → 测速地址被服务端的禁回国规则拦了
+#### 情况 A：**只是没数字，但节点能上网** → 测速地址被服务端的拦截规则挡了
 
 `URLTest` 默认用 `https://www.gstatic.com/generate_204`，而 `www.gstatic.com` 有一个 A 记录是
-Google 的中国前置 IP（`geoip=CN`），会被服务端 `geoip:cn → block` 拦掉 → 测速永远失败。
+Google 的中国前置 IP（`geoip=CN`）。服务端以前有 `geoip:cn → block`（禁回国），会把它拦掉 → 测速永远失败。
 **两个节点、手机电脑都会这样，跟节点好坏无关。**
 
-→ 服务端已修（`server/xray-config.json` 里 `domain:gstatic.com → direct` 放在 block 之前）。
-   客户端也可以自己把测速地址换成 `https://cp.cloudflare.com/generate_204`。
+→ **现在已改成全部流量走代理**（服务端只 block 私有地址和 BT），这个坑不存在了。
+   如果哪天又出现，客户端把测速地址换成 `https://cp.cloudflare.com/generate_204` 即可。
    详见 `../docs/03-排错记录.md` **坑 11**。
 
 #### 情况 B：**连不上、日志里报认证失败** → 服务端 Xray 版本不兼容

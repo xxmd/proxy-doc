@@ -114,8 +114,8 @@ for pair in "google:https://www.google.com" "youtube:https://www.youtube.com"; d
   if [ "$code" = "200" ]; then ok "$name → 200"; else bad "$name → $code"; fi
 done
 
-code=$(curl -s -o /dev/null -w "%{http_code}" --socks5-hostname 127.0.0.1:10808 --max-time 10 https://www.baidu.com)
-if [ "$code" != "200" ]; then ok "baidu 被拦截（禁回国规则生效）"; else bad "baidu 竟然通了 —— 禁回国规则没生效！"; fi
+code=$(curl -s -o /dev/null -w "%{http_code}" --socks5-hostname 127.0.0.1:10808 --max-time 15 https://www.baidu.com)
+if [ "$code" = "200" ]; then ok "baidu → 200（全流量代理，国内站点也走代理）"; else bad "baidu → $code（全流量代理下应该能通）"; fi
 
 echo "  出口 IP: $(curl -s --socks5-hostname 127.0.0.1:10808 --max-time 20 'http://ip-api.com/json/?fields=country,city,isp,as,query' 2>/dev/null)"
 
